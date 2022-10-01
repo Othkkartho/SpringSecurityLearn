@@ -7,7 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-@Data
+@Setter
+@Getter
 public class Account {
     @Id
     @GeneratedValue
