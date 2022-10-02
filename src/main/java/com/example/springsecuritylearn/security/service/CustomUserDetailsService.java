@@ -2,6 +2,7 @@ package com.example.springsecuritylearn.security.service;
 
 import com.example.springsecuritylearn.domain.Account;
 import com.example.springsecuritylearn.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,9 +15,10 @@ import java.util.List;
 
 @Service("userDetailsService")
 public class CustomUserDetailsService implements UserDetailsService {
-    private final UserRepository userRepository;
+    private UserRepository userRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
+    @Autowired
+    private void setCustomUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
