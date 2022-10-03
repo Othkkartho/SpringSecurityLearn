@@ -1,11 +1,12 @@
 package com.example.springsecuritylearn.security.configs;
 
+import com.example.springsecuritylearn.security.common.FormAuthenticationDetailsSource;
+import com.example.springsecuritylearn.security.handler.CustomAccessDeniedHandler;
 import com.example.springsecuritylearn.security.provider.CustomAuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,18 +15,19 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private AuthenticationDetailsSource authenticationDetailsSource;
+    private FormAuthenticationDetailsSource authenticationDetailsSource;
     private AuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private AuthenticationFailureHandler customAuthenticationFailureHandler;
 
     @Autowired
-    private void setSecurityConfig(AuthenticationDetailsSource authenticationDetailsSource, AuthenticationSuccessHandler customAuthenticationSuccessHandler, AuthenticationFailureHandler customAuthenticationFailureHandler) {
+    private void setSecurityConfig(FormAuthenticationDetailsSource authenticationDetailsSource, AuthenticationSuccessHandler customAuthenticationSuccessHandler, AuthenticationFailureHandler customAuthenticationFailureHandler) {
         this.authenticationDetailsSource = authenticationDetailsSource;
         this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
         this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
@@ -39,6 +41,14 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        CustomAccessDeniedHandler accessDeniedHandler = new CustomAccessDeniedHandler();
+        accessDeniedHandler.setErrorPage("/denied");
+
+        return accessDeniedHandler;
     }
 
     @Bean
@@ -66,7 +76,10 @@ public class SecurityConfig {
                 .authenticationDetailsSource(authenticationDetailsSource)
                 .successHandler(customAuthenticationSuccessHandler)
                 .failureHandler(customAuthenticationFailureHandler)
-                .permitAll();
+                .permitAll()
+                .and()
+                .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler());
 
         return http.build();
     }
