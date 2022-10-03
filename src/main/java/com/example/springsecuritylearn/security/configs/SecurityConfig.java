@@ -14,15 +14,21 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     private AuthenticationDetailsSource authenticationDetailsSource;
+    private AuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private AuthenticationFailureHandler customAuthenticationFailureHandler;
 
     @Autowired
-    private void setSecurityConfig(AuthenticationDetailsSource authenticationDetailsSource) {
+    private void setSecurityConfig(AuthenticationDetailsSource authenticationDetailsSource, AuthenticationSuccessHandler customAuthenticationSuccessHandler, AuthenticationFailureHandler customAuthenticationFailureHandler) {
         this.authenticationDetailsSource = authenticationDetailsSource;
+        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
+        this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
     }
 
     @Bean
@@ -47,7 +53,7 @@ public class SecurityConfig {
 
         http
                 .authorizeRequests()
-                .antMatchers("/", "/users", "/user/login/**", "/error").permitAll()
+                .antMatchers("/", "/users", "/user/login/**", "/error", "/login**").permitAll()
                 .antMatchers("/mypage").hasRole("USER")
                 .antMatchers("/messages").hasRole("MANAGER")
                 .antMatchers("/config").hasRole("ADMIN")
@@ -56,8 +62,10 @@ public class SecurityConfig {
                 .formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/login_proc")
-                .authenticationDetailsSource(authenticationDetailsSource)
                 .defaultSuccessUrl("/")
+                .authenticationDetailsSource(authenticationDetailsSource)
+                .successHandler(customAuthenticationSuccessHandler)
+                .failureHandler(customAuthenticationFailureHandler)
                 .permitAll();
 
         return http.build();
