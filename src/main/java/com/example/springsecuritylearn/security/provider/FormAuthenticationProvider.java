@@ -15,16 +15,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-public class CustomAuthenticationProvider implements AuthenticationProvider {
+public class FormAuthenticationProvider implements AuthenticationProvider {
     private UserDetailsService userDetailsService;
     private PasswordEncoder passwordEncoder;
 
-    public CustomAuthenticationProvider(PasswordEncoder passwordEncoder) {
+    public FormAuthenticationProvider(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
     @Autowired
-    private void setCustomAuthenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    private void setFormAuthenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -32,10 +32,16 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     @Override
     @Transactional
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+       AccountContext accountContext = authenticationIf(authentication, userDetailsService, passwordEncoder);
+
+        return new UsernamePasswordAuthenticationToken(accountContext.getAccount(), null, accountContext.getAuthorities());
+    }
+
+    static AccountContext authenticationIf(Authentication authentication, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         String username = authentication.getName();
         String password = (String) authentication.getCredentials();
 
-        AccountContext accountContext = (AccountContext)userDetailsService.loadUserByUsername(username);
+        AccountContext accountContext = (AccountContext) userDetailsService.loadUserByUsername(username);
 
         if (!passwordEncoder.matches(password, accountContext.getAccount().getPassword())) {
             throw new BadCredentialsException("BadCredentialsException");
@@ -47,7 +53,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             throw new InsufficientAuthenticationException("InsufficientAuthenticationException");
         }
 
-        return new UsernamePasswordAuthenticationToken(accountContext.getAccount(), null, accountContext.getAuthorities());
+        return accountContext;
     }
 
     @Override

@@ -1,17 +1,16 @@
 package com.example.springsecuritylearn.security.configs;
 
 import com.example.springsecuritylearn.security.common.FormAuthenticationDetailsSource;
-import com.example.springsecuritylearn.security.filter.AjaxLoginProcessingFilter;
 import com.example.springsecuritylearn.security.handler.CustomAccessDeniedHandler;
-import com.example.springsecuritylearn.security.provider.CustomAuthenticationProvider;
+import com.example.springsecuritylearn.security.provider.FormAuthenticationProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -21,19 +20,20 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
 @Configuration
 @EnableWebSecurity
+@Slf4j
+@Order(1)
 public class SecurityConfig {
-    private AuthenticationConfiguration authenticationConfiguration;
+
     private FormAuthenticationDetailsSource authenticationDetailsSource;
     private AuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private AuthenticationFailureHandler customAuthenticationFailureHandler;
 
     @Autowired
-    private void setSecurityConfig(AuthenticationConfiguration authenticationConfiguration, FormAuthenticationDetailsSource authenticationDetailsSource, AuthenticationSuccessHandler customAuthenticationSuccessHandler, AuthenticationFailureHandler customAuthenticationFailureHandler) {
-        this.authenticationConfiguration = authenticationConfiguration;
+    private void setSecurityConfig(FormAuthenticationDetailsSource authenticationDetailsSource, AuthenticationSuccessHandler customAuthenticationSuccessHandler, AuthenticationFailureHandler customAuthenticationFailureHandler) {
         this.authenticationDetailsSource = authenticationDetailsSource;
         this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
         this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
@@ -41,7 +41,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        return new CustomAuthenticationProvider(passwordEncoder());
+        return new FormAuthenticationProvider(passwordEncoder());
     }
 
     @Bean
@@ -55,18 +55,6 @@ public class SecurityConfig {
         accessDeniedHandler.setErrorPage("/denied");
 
         return accessDeniedHandler;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
-
-    @Bean
-    public AjaxLoginProcessingFilter ajaxLoginProcessingFilter() throws Exception {
-        AjaxLoginProcessingFilter ajaxLoginProcessingFilter = new AjaxLoginProcessingFilter();
-        ajaxLoginProcessingFilter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
-        return ajaxLoginProcessingFilter;
     }
 
     @Bean
@@ -98,9 +86,9 @@ public class SecurityConfig {
                 .permitAll()
                 .and()
                 .exceptionHandling()
-                .accessDeniedHandler(accessDeniedHandler())
-                .and()
-                .addFilterBefore(ajaxLoginProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+                .accessDeniedPage("/denied")
+                .accessDeniedHandler(accessDeniedHandler());
 
         http.csrf().disable();
 
