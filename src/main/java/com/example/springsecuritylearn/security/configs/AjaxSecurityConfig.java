@@ -1,6 +1,6 @@
 package com.example.springsecuritylearn.security.configs;
 
-import com.example.springsecuritylearn.security.common.AjaxLoginAuthenticationEntryPoint;
+import com.example.springsecuritylearn.security.common.AjaxLoginUrlAuthenticationEntryPoint;
 import com.example.springsecuritylearn.security.filter.AjaxLoginProcessingFilter;
 import com.example.springsecuritylearn.security.handler.AjaxAccessDeniedHandler;
 import com.example.springsecuritylearn.security.handler.AjaxAuthenticationFailureHandler;
@@ -71,7 +71,7 @@ public class AjaxSecurityConfig {
 
         http
                 .exceptionHandling()
-                .authenticationEntryPoint(new AjaxLoginAuthenticationEntryPoint())
+                .authenticationEntryPoint(new AjaxLoginUrlAuthenticationEntryPoint())
                 .accessDeniedHandler(ajaxAccessDeniedHandler());
 
         http.csrf().disable();
