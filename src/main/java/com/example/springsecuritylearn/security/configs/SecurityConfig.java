@@ -113,11 +113,11 @@ public class SecurityConfig {
 
     @Bean
     public FilterSecurityInterceptor customFilterSecurityInterceptor() throws Exception {
-
         FilterSecurityInterceptor filterSecurityInterceptor = new FilterSecurityInterceptor();
         filterSecurityInterceptor.setSecurityMetadataSource(urlFilterInvocationSecurityMetadataSource());
         filterSecurityInterceptor.setAccessDecisionManager(affirmativeBased());
         filterSecurityInterceptor.setAuthenticationManager(authenticationManager(authenticationConfiguration));
+
         return filterSecurityInterceptor;
     }
 

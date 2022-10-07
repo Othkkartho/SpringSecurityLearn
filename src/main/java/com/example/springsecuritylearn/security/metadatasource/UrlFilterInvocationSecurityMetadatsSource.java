@@ -11,20 +11,18 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 public class UrlFilterInvocationSecurityMetadatsSource implements FilterInvocationSecurityMetadataSource {
-
     private final LinkedHashMap<RequestMatcher, List<ConfigAttribute>> requestMap = new LinkedHashMap<>();
 
     @Override
     public Collection<ConfigAttribute> getAttributes(Object object) throws IllegalArgumentException {
-
         HttpServletRequest request = ((FilterInvocation) object).getRequest();
 
         requestMap.put(new AntPathRequestMatcher("/mypage"), List.of(new SecurityConfig("ROLE_USER")));
 
         if(requestMap != null){
-            for(Map.Entry<RequestMatcher, List<ConfigAttribute>> entry : requestMap.entrySet()){
+            for(Map.Entry<RequestMatcher, List<ConfigAttribute>> entry : requestMap.entrySet()) {
                 RequestMatcher matcher = entry.getKey();
-                if(matcher.matches(request)){
+                if(matcher.matches(request)) {
                     return entry.getValue();
                 }
             }
