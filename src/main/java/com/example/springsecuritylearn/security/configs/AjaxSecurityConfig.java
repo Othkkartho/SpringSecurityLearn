@@ -61,9 +61,6 @@ public class AjaxSecurityConfig {
 
     @Bean
     public SecurityFilterChain FilterChain(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.authenticationProvider(ajaxAuthenticationProvider());
-
         http
                 .antMatcher("/api/**")
                 .authorizeRequests()
