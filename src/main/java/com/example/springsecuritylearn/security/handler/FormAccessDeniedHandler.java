@@ -18,12 +18,11 @@ import java.io.IOException;
 @Component
 public class FormAccessDeniedHandler implements AccessDeniedHandler {
 	private String errorPage;
-	private ObjectMapper mapper = new ObjectMapper();
-	private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+	private final ObjectMapper mapper = new ObjectMapper();
+	private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	
 	@Override
 	public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
-
 		if (WebUtil.isAjax(request)) {
 			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 			response.getWriter().write(this.mapper.writeValueAsString(ResponseEntity.status(HttpStatus.FORBIDDEN)));

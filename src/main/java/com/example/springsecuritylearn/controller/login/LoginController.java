@@ -44,7 +44,7 @@ public class LoginController {
 			account = (Account) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
 
 		}
-		else if(principal instanceof AjaxAuthenticationToken){
+		else if (principal instanceof AjaxAuthenticationToken){
 			account = (Account) ((AjaxAuthenticationToken) principal).getPrincipal();
 		}
 
