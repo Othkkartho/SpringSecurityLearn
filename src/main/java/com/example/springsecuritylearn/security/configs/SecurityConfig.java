@@ -1,10 +1,13 @@
 package com.example.springsecuritylearn.security.configs;
 
 import com.example.springsecuritylearn.security.common.FormWebAuthenticationDetailsSource;
+import com.example.springsecuritylearn.security.factory.UrlResourcesMapFactoryBean;
 import com.example.springsecuritylearn.security.handler.FormAccessDeniedHandler;
 import com.example.springsecuritylearn.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
 import com.example.springsecuritylearn.security.provider.FormAuthenticationProvider;
+import com.example.springsecuritylearn.service.SecurityResourceService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +34,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
 import java.util.List;
+import java.util.ResourceBundle;
 
 @Configuration
 @EnableWebSecurity
@@ -40,13 +44,16 @@ public class SecurityConfig {
     private FormWebAuthenticationDetailsSource formWebAuthenticationDetailsSource;
     private AuthenticationSuccessHandler formAuthenticationSuccessHandler;
     private AuthenticationFailureHandler formAuthenticationFailureHandler;
+    private SecurityResourceService securityResourceService;
 
     @Autowired
-    private void setSecurityConfig(AuthenticationConfiguration authenticationConfiguration, FormWebAuthenticationDetailsSource formWebAuthenticationDetailsSource, AuthenticationSuccessHandler formAuthenticationSuccessHandler, AuthenticationFailureHandler formAuthenticationFailureHandler) {
+    private void setSecurityConfig(AuthenticationConfiguration authenticationConfiguration, FormWebAuthenticationDetailsSource formWebAuthenticationDetailsSource, AuthenticationSuccessHandler formAuthenticationSuccessHandler,
+                                   AuthenticationFailureHandler formAuthenticationFailureHandler, SecurityResourceService securityResourceService) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.formWebAuthenticationDetailsSource = formWebAuthenticationDetailsSource;
         this.formAuthenticationSuccessHandler = formAuthenticationSuccessHandler;
         this.formAuthenticationFailureHandler = formAuthenticationFailureHandler;
+        this.securityResourceService = securityResourceService;
     }
 
     @Bean
@@ -67,10 +74,6 @@ public class SecurityConfig {
 
         http
                 .authorizeRequests()
-                .antMatchers("/mypage").hasRole("USER")
-                .antMatchers("/messages").hasRole("MANAGER")
-                .antMatchers("/config").hasRole("ADMIN")
-                .antMatchers("/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
@@ -87,8 +90,7 @@ public class SecurityConfig {
                 .accessDeniedPage("/denied")
                 .accessDeniedHandler(accessDeniedHandler())
                 .and()
-                .addFilterBefore(customFilterSecurityInterceptor(), FilterSecurityInterceptor.class)
-        ;
+                .addFilterBefore(customFilterSecurityInterceptor(), FilterSecurityInterceptor.class);
 
         http.csrf().disable();
 
@@ -122,15 +124,23 @@ public class SecurityConfig {
     }
 
     private AccessDecisionManager affirmativeBased() {
-        return new AffirmativeBased(getAccessDecistionVoters());
+        return new AffirmativeBased(getAccessDecisionVoters());
     }
 
-    private List<AccessDecisionVoter<?>> getAccessDecistionVoters() {
+    private List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
         return List.of(new RoleVoter());
     }
 
     @Bean
-    public FilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() {
-        return new UrlFilterInvocationSecurityMetadatsSource();
+    public FilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() throws Exception {
+        return new UrlFilterInvocationSecurityMetadatsSource(urlResourcesMapFactoryBean().getObject());
+    }
+
+    private UrlResourcesMapFactoryBean urlResourcesMapFactoryBean() {
+        UrlResourcesMapFactoryBean urlResourcesMapFactoryBean = new UrlResourcesMapFactoryBean();
+
+        urlResourcesMapFactoryBean.setSecurityResourceService(securityResourceService);
+
+        return urlResourcesMapFactoryBean;
     }
 }
