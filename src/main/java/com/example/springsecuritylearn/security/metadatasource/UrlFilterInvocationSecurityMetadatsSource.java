@@ -19,7 +19,7 @@ public class UrlFilterInvocationSecurityMetadatsSource implements FilterInvocati
 
         requestMap.put(new AntPathRequestMatcher("/mypage"), List.of(new SecurityConfig("ROLE_USER")));
 
-        if(requestMap != null){
+        if(requestMap != null) {
             for(Map.Entry<RequestMatcher, List<ConfigAttribute>> entry : requestMap.entrySet()) {
                 RequestMatcher matcher = entry.getKey();
                 if(matcher.matches(request)) {
@@ -35,8 +35,7 @@ public class UrlFilterInvocationSecurityMetadatsSource implements FilterInvocati
     public Collection<ConfigAttribute> getAllConfigAttributes() {
         Set<ConfigAttribute> allAttributes = new HashSet<>();
 
-        for (Map.Entry<RequestMatcher, List<ConfigAttribute>> entry : requestMap
-                .entrySet()) {
+        for (Map.Entry<RequestMatcher, List<ConfigAttribute>> entry : requestMap.entrySet()) {
             allAttributes.addAll(entry.getValue());
         }
 
