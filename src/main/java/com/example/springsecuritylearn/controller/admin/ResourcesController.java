@@ -5,6 +5,7 @@ import com.example.springsecuritylearn.domain.entity.Resources;
 import com.example.springsecuritylearn.domain.entity.Role;
 import com.example.springsecuritylearn.repository.RoleRepository;
 import com.example.springsecuritylearn.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
+import com.example.springsecuritylearn.service.MethodSecurityService;
 import com.example.springsecuritylearn.service.ResourcesService;
 import com.example.springsecuritylearn.service.RoleService;
 import org.modelmapper.ModelMapper;
@@ -24,26 +25,29 @@ public class ResourcesController {
 	private ResourcesService resourcesService;
 	private RoleRepository roleRepository;
 	private RoleService roleService;
-	private UrlFilterInvocationSecurityMetadatsSource urlFilterInvocationSecurityMetadatsSource;
+	private MethodSecurityService methodSecurityService;
+	private UrlFilterInvocationSecurityMetadatsSource filterInvocationSecurityMetadataSource;
 
 	@Autowired
-	private void setResourceController(ResourcesService resourcesService, RoleRepository roleRepository, RoleService roleService, UrlFilterInvocationSecurityMetadatsSource urlFilterInvocationSecurityMetadatsSource) {
+	private void setResourceController(ResourcesService resourcesService, RoleRepository roleRepository, RoleService roleService, MethodSecurityService methodSecurityService,
+									   UrlFilterInvocationSecurityMetadatsSource filterInvocationSecurityMetadataSource) {
 		this.resourcesService = resourcesService;
 		this.roleRepository = roleRepository;
 		this.roleService = roleService;
-		this.urlFilterInvocationSecurityMetadatsSource = urlFilterInvocationSecurityMetadatsSource;
+		this.methodSecurityService = methodSecurityService;
+		this.filterInvocationSecurityMetadataSource = filterInvocationSecurityMetadataSource;
 	}
 
 	@GetMapping(value="/admin/resources")
-	public String getResources(Model model) {
+	public String getResources(Model model) throws Exception {
 		List<Resources> resources = resourcesService.getResources();
 		model.addAttribute("resources", resources);
 
-		return "/admin/resource/list";
+		return "admin/resource/list";
 	}
 
 	@PostMapping(value="/admin/resources")
-	public String createResources(ResourcesDto resourcesDto) {
+	public String createResources(ResourcesDto resourcesDto) throws Exception {
 		ModelMapper modelMapper = new ModelMapper();
 		Role role = roleRepository.findByRoleName(resourcesDto.getRoleName());
 		Set<Role> roles = new HashSet<>();
@@ -52,13 +56,19 @@ public class ResourcesController {
 		resources.setRoleSet(roles);
 
 		resourcesService.createResources(resources);
-		urlFilterInvocationSecurityMetadatsSource.reload();
+
+		if("url".equals(resourcesDto.getResourceType())) {
+			filterInvocationSecurityMetadataSource.reload();
+		}
+		else if("method".equals(resourcesDto.getResourceType())) {
+			methodSecurityService.addMethodSecured(resourcesDto.getResourceName(),resourcesDto.getRoleName());
+		}
 
 		return "redirect:/admin/resources";
 	}
 
 	@GetMapping(value="/admin/resources/register")
-	public String viewRoles(Model model) {
+	public String viewRoles(Model model) throws Exception {
 		List<Role> roleList = roleService.getRoles();
 		model.addAttribute("roleList", roleList);
 
@@ -68,28 +78,34 @@ public class ResourcesController {
 		resources.setRoleSet(roleSet);
 		model.addAttribute("resources", resources);
 
-		return "/admin/resource/detail";
+		return "admin/resource/detail";
 	}
 
 	@GetMapping(value="/admin/resources/{id}")
-	public String getResources(@PathVariable String id, Model model) {
-
+	public String getResources(@PathVariable String id, Model model) throws Exception {
 		List<Role> roleList = roleService.getRoles();
-        model.addAttribute("roleList", roleList);
+		model.addAttribute("roleList", roleList);
 		Resources resources = resourcesService.getResources(Long.parseLong(id));
 
 		ModelMapper modelMapper = new ModelMapper();
 		ResourcesDto resourcesDto = modelMapper.map(resources, ResourcesDto.class);
 		model.addAttribute("resources", resourcesDto);
 
-		return "/admin/resource/detail";
+		return "admin/resource/detail";
 	}
 
 	@GetMapping(value="/admin/resources/delete/{id}")
-	public String removeResources(@PathVariable String id, Model model) {
+	public String removeResources(@PathVariable String id, Model model) throws Exception {
+
 		Resources resources = resourcesService.getResources(Long.parseLong(id));
 		resourcesService.deleteResources(Long.parseLong(id));
-		urlFilterInvocationSecurityMetadatsSource.reload();
+
+		if("url".equals(resources.getResourceType())) {
+			filterInvocationSecurityMetadataSource.reload();
+		}
+		else if("method".equals(resources.getResourceType())) {
+			methodSecurityService.removeMethodSecured(resources.getResourceName());
+		}
 
 		return "redirect:/admin/resources";
 	}

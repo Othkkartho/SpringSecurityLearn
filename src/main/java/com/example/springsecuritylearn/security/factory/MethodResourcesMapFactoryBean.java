@@ -7,37 +7,43 @@ import org.springframework.security.access.ConfigAttribute;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class MethodResourcesFactoryBean implements FactoryBean<LinkedHashMap<String, List<ConfigAttribute>>> {
+public class MethodResourcesMapFactoryBean implements FactoryBean<LinkedHashMap<String, List<ConfigAttribute>>> {
     private SecurityResourceService securityResourceService;
-    private LinkedHashMap<String, List<ConfigAttribute>> resourceMap;
     private String resourceType;
 
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
     }
+
     public void setSecurityResourceService(SecurityResourceService securityResourceService) {
         this.securityResourceService = securityResourceService;
     }
 
-    @Override
-    public LinkedHashMap<String, List<ConfigAttribute>> getObject() {
-        if ("method".equals(resourceType)) {
-            resourceMap = securityResourceService.getMethodResourceList();
-        }
-        else if ("pointcut".equals(resourceType)) {
-            resourceMap = securityResourceService.getPointcutResourceList();
-        }
+    private LinkedHashMap<String, List<ConfigAttribute>> resourcesMap;
 
-        return resourceMap;
+    public void init() {
+        if ("method".equals(resourceType)) {
+            resourcesMap = securityResourceService.getMethodResourceList();
+        }
+        else if("pointcut".equals(resourceType)) {
+            resourcesMap = securityResourceService.getPointcutResourceList();
+        }
     }
 
-    @Override
-    public Class<?> getObjectType() {
+    public LinkedHashMap<String, List<ConfigAttribute>> getObject() {
+        if (resourcesMap == null) {
+            init();
+        }
+
+        return resourcesMap;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Class<LinkedHashMap> getObjectType() {
         return LinkedHashMap.class;
     }
 
-    @Override
     public boolean isSingleton() {
-        return FactoryBean.super.isSingleton();
+        return true;
     }
 }

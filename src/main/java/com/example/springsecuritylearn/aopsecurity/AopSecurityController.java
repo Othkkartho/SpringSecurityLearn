@@ -13,19 +13,21 @@ import java.security.Principal;
 public class AopSecurityController {
     private AopMethodService aopMethodService;
     private AopPointcutService aopPointcutService;
+    private AopLiveMethodService aopLiveMethodService;
 
     @Autowired
-    private void setAopSecurityController(AopMethodService aopMethodService, AopPointcutService aopPointcutService) {
+    private void setAopSecurityController(AopMethodService aopMethodService, AopPointcutService aopPointcutService, AopLiveMethodService aopLiveMethodService) {
         this.aopMethodService = aopMethodService;
         this.aopPointcutService = aopPointcutService;
+        this.aopLiveMethodService = aopLiveMethodService;
     }
 
     @GetMapping("/preAuthorize")
-    @PreAuthorize("hasRole('ROLE_USER') and #account.username == principal.username")
+    //@PreAuthorize("hasRole('ROLE_USER') and #account.username == principal.username")
     public String preAuthorize(AccountDto account, Model model, Principal principal) {
         model.addAttribute("method", "Success @PreAuthorize");
 
-        return "/aop/method";
+        return "aop/method";
     }
 
     @GetMapping("/methodSecured")
@@ -33,15 +35,23 @@ public class AopSecurityController {
         aopMethodService.methodSecured();
         model.addAttribute("method", "Success MethodSecured");
 
-        return "/aop/method";
+        return "aop/method";
     }
 
     @GetMapping("/pointcutSecured")
-    public String pointcutSecured(Model model) {
+    public String pointcutSecured(Model model){
         aopPointcutService.notSecured();
         aopPointcutService.pointcutSecured();
-        model.addAttribute("pointcut", "Success PointcutSecured");
+        model.addAttribute("method", "Success PointcutSecured");
 
-        return "/aop/method";
+        return "aop/method";
+    }
+
+    @GetMapping("/liveMethodSecured")
+    public String liveMethodSecured(Model model){
+        aopLiveMethodService.liveMethodSecured();
+        model.addAttribute("method", "Success LiveMethodSecured");
+
+        return "aop/method";
     }
 }
