@@ -39,7 +39,7 @@ public class ResourcesController {
 	}
 
 	@GetMapping(value="/admin/resources")
-	public String getResources(Model model) throws Exception {
+	public String getResources(Model model) {
 		List<Resources> resources = resourcesService.getResources();
 		model.addAttribute("resources", resources);
 
@@ -68,7 +68,7 @@ public class ResourcesController {
 	}
 
 	@GetMapping(value="/admin/resources/register")
-	public String viewRoles(Model model) throws Exception {
+	public String viewRoles(Model model) {
 		List<Role> roleList = roleService.getRoles();
 		model.addAttribute("roleList", roleList);
 
@@ -82,7 +82,7 @@ public class ResourcesController {
 	}
 
 	@GetMapping(value="/admin/resources/{id}")
-	public String getResources(@PathVariable String id, Model model) throws Exception {
+	public String getResources(@PathVariable String id, Model model) {
 		List<Role> roleList = roleService.getRoles();
 		model.addAttribute("roleList", roleList);
 		Resources resources = resourcesService.getResources(Long.parseLong(id));

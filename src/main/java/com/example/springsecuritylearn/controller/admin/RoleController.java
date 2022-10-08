@@ -33,7 +33,6 @@ public class RoleController {
 
 	@GetMapping(value="/admin/roles/register")
 	public String viewRoles(Model model) {
-
 		RoleDto role = new RoleDto();
 		model.addAttribute("role", role);
 
@@ -42,7 +41,6 @@ public class RoleController {
 
 	@PostMapping(value="/admin/roles")
 	public String createRole(RoleDto roleDto) {
-
 		ModelMapper modelMapper = new ModelMapper();
 		Role role = modelMapper.map(roleDto, Role.class);
 		roleService.createRole(role);
@@ -52,7 +50,6 @@ public class RoleController {
 
 	@GetMapping(value="/admin/roles/{id}")
 	public String getRole(@PathVariable String id, Model model) {
-
 		Role role = roleService.getRole(Long.parseLong(id));
 
 		ModelMapper modelMapper = new ModelMapper();
