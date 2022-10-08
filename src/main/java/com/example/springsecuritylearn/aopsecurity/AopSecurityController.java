@@ -12,10 +12,12 @@ import java.security.Principal;
 @Controller
 public class AopSecurityController {
     private AopMethodService aopMethodService;
+    private AopPointcutService aopPointcutService;
 
     @Autowired
-    private void setAopSecurityController(AopMethodService aopMethodService) {
+    private void setAopSecurityController(AopMethodService aopMethodService, AopPointcutService aopPointcutService) {
         this.aopMethodService = aopMethodService;
+        this.aopPointcutService = aopPointcutService;
     }
 
     @GetMapping("/preAuthorize")
@@ -30,6 +32,15 @@ public class AopSecurityController {
     public String methodSecured(Model model) {
         aopMethodService.methodSecured();
         model.addAttribute("method", "Success MethodSecured");
+
+        return "/aop/method";
+    }
+
+    @GetMapping("/pointcutSecured")
+    public String pointcutSecured(Model model) {
+        aopPointcutService.notSecured();
+        aopPointcutService.pointcutSecured();
+        model.addAttribute("pointcut", "Success PointcutSecured");
 
         return "/aop/method";
     }
