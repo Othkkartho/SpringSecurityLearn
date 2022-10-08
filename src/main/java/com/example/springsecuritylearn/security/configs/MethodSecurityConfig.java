@@ -8,15 +8,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.access.intercept.RunAsManager;
 import org.springframework.security.access.method.MapBasedMethodSecurityMetadataSource;
 import org.springframework.security.access.method.MethodSecurityMetadataSource;
+import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.access.vote.RoleHierarchyVoter;
+import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 
+import java.util.List;
 import java.util.Objects;
 
 @Configuration
@@ -32,6 +36,19 @@ public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
     @Override
     protected MethodSecurityMetadataSource customMethodSecurityMetadataSource() {
         return mapBasedMethodSecurityMetadataSource();
+    }
+
+    @Override
+    protected AccessDecisionManager accessDecisionManager() {
+        AffirmativeBased affirmativeBased = (AffirmativeBased)super.accessDecisionManager();
+        List<AccessDecisionVoter<?>> decisionVoters = affirmativeBased.getDecisionVoters();
+        for(AccessDecisionVoter accessDecisionVoter : decisionVoters){
+            if(accessDecisionVoter instanceof RoleVoter){
+                decisionVoters.remove(accessDecisionVoter);
+            }
+        }
+        decisionVoters.add(0,roleVoter());
+        return affirmativeBased;
     }
 
     @Bean
