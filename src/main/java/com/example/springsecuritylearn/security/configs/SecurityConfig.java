@@ -2,6 +2,7 @@ package com.example.springsecuritylearn.security.configs;
 
 import com.example.springsecuritylearn.security.common.FormWebAuthenticationDetailsSource;
 import com.example.springsecuritylearn.security.factory.UrlResourcesMapFactoryBean;
+import com.example.springsecuritylearn.security.filter.PermitAllFilter;
 import com.example.springsecuritylearn.security.handler.FormAccessDeniedHandler;
 import com.example.springsecuritylearn.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
 import com.example.springsecuritylearn.security.provider.FormAuthenticationProvider;
@@ -43,6 +44,7 @@ public class SecurityConfig {
     private AuthenticationSuccessHandler formAuthenticationSuccessHandler;
     private AuthenticationFailureHandler formAuthenticationFailureHandler;
     private SecurityResourceService securityResourceService;
+    private final String[] permitAllResources = {"/", "/login", "/user/login/**"};
 
     @Autowired
     private void setSecurityConfig(AuthenticationConfiguration authenticationConfiguration, FormWebAuthenticationDetailsSource formWebAuthenticationDetailsSource, AuthenticationSuccessHandler formAuthenticationSuccessHandler,
@@ -83,7 +85,6 @@ public class SecurityConfig {
                 .permitAll()
                 .and()
                 .exceptionHandling()
-//                .authenticationEntryPoint(new AjaxLoginAuthenticationEntryPoint())
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
                 .accessDeniedPage("/denied")
                 .accessDeniedHandler(accessDeniedHandler())
@@ -112,8 +113,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public FilterSecurityInterceptor customFilterSecurityInterceptor() throws Exception {
-        FilterSecurityInterceptor filterSecurityInterceptor = new FilterSecurityInterceptor();
+    public PermitAllFilter customFilterSecurityInterceptor() throws Exception {
+        PermitAllFilter filterSecurityInterceptor = new PermitAllFilter(permitAllResources);
         filterSecurityInterceptor.setSecurityMetadataSource(urlFilterInvocationSecurityMetadataSource());
         filterSecurityInterceptor.setAccessDecisionManager(affirmativeBased());
         filterSecurityInterceptor.setAuthenticationManager(authenticationManager(authenticationConfiguration));
