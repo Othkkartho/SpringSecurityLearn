@@ -3,9 +3,8 @@ package com.example.springsecuritylearn.security.listener;
 import com.example.springsecuritylearn.domain.entity.Account;
 import com.example.springsecuritylearn.domain.entity.Resources;
 import com.example.springsecuritylearn.domain.entity.Role;
-import com.example.springsecuritylearn.repository.ResourcesRepository;
-import com.example.springsecuritylearn.repository.RoleRepository;
-import com.example.springsecuritylearn.repository.UserRepository;
+import com.example.springsecuritylearn.domain.entity.RoleHierarchy;
+import com.example.springsecuritylearn.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -19,20 +18,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
-
     private boolean alreadySetup = false;
-
     private UserRepository userRepository;
     private RoleRepository roleRepository;
     private ResourcesRepository resourcesRepository;
     private PasswordEncoder passwordEncoder;
+    private RoleHierarchyRepository roleHierarchyRepository;
 
     @Autowired
-    private void setSetupDataLoader(UserRepository userRepository, RoleRepository roleRepository, ResourcesRepository resourcesRepository, PasswordEncoder passwordEncoder) {
+    private void setSetupDataLoader(UserRepository userRepository, RoleRepository roleRepository, ResourcesRepository resourcesRepository, PasswordEncoder passwordEncoder,
+                                    RoleHierarchyRepository roleHierarchyRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.resourcesRepository = resourcesRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleHierarchyRepository = roleHierarchyRepository;
     }
 
     private static final AtomicInteger count = new AtomicInteger(0);
@@ -40,46 +40,29 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Override
     @Transactional
     public void onApplicationEvent(final ContextRefreshedEvent event) {
-
         if (alreadySetup) {
             return;
         }
 
         setupSecurityResources();
-
         alreadySetup = true;
     }
-
-
 
     private void setupSecurityResources() {
         Set<Role> roles = new HashSet<>();
         Role adminRole = createRoleIfNotFound("ROLE_ADMIN", "관리자");
         roles.add(adminRole);
-        createResourceIfNotFound("/admin/**", "", roles, "url");
-        Account account = createUserIfNotFound("admin", "pass", "admin@gmail.com", 10,  roles);
-        
-//        Set<Role> roles1 = new HashSet<>();
-//
-//        Role managerRole = createRoleIfNotFound("ROLE_MANAGER", "매니저");
-//        roles1.add(managerRole);
-//        createResourceIfNotFound("io.security.corespringsecurity.aopsecurity.method.AopMethodService.methodTest", "", roles1, "method");
-//        createResourceIfNotFound("io.security.corespringsecurity.aopsecurity.method.AopMethodService.innerCallMethodTest", "", roles1, "method");
-//        createResourceIfNotFound("execution(* io.security.corespringsecurity.aopsecurity.pointcut.*Service.*(..))", "", roles1, "pointcut");
-//        createUserIfNotFound("manager", "pass", "manager@gmail.com", 20, roles1);
-//
-//        Set<Role> roles3 = new HashSet<>();
-//
-//        Role childRole1 = createRoleIfNotFound("ROLE_USER", "회원");
-//        roles3.add(childRole1);
-//        createResourceIfNotFound("/users/**", "", roles3, "url");
-//        createUserIfNotFound("user", "pass", "user@gmail.com", 30, roles3);
-
+//        createResourceIfNotFound("/admin/**", "", roles, "url");
+//        createResourceIfNotFound("execution(public * io.security.corespringsecurity.aopsecurity.*Service.pointcut*(..))", "", roles, "pointcut");
+        createUserIfNotFound("admin", "admin@admin.com", "pass", roles);
+        Role managerRole = createRoleIfNotFound("ROLE_MANAGER", "매니저권한");
+        Role userRole = createRoleIfNotFound("ROLE_USER", "사용자권한");
+        createRoleHierarchyIfNotFound(managerRole, adminRole);
+        createRoleHierarchyIfNotFound(userRole, managerRole);
     }
 
     @Transactional
     public Role createRoleIfNotFound(String roleName, String roleDesc) {
-
         Role role = roleRepository.findByRoleName(roleName);
 
         if (role == null) {
@@ -88,23 +71,23 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                     .roleDesc(roleDesc)
                     .build();
         }
+
         return roleRepository.save(role);
     }
 
     @Transactional
-    public Account createUserIfNotFound(String userName, String password, String email, int age, Set<Role> roleSet) {
-
+    public Account createUserIfNotFound(final String userName, final String email, final String password, Set<Role> roleSet) {
         Account account = userRepository.findByUsername(userName);
 
         if (account == null) {
             account = Account.builder()
                     .username(userName)
                     .email(email)
-                    .age(age)
                     .password(passwordEncoder.encode(password))
                     .userRoles(roleSet)
                     .build();
         }
+
         return userRepository.save(account);
     }
 
@@ -121,6 +104,28 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                     .orderNum(count.incrementAndGet())
                     .build();
         }
+
         return resourcesRepository.save(resources);
+    }
+
+    @Transactional
+    public void createRoleHierarchyIfNotFound(Role childRole, Role parentRole) {
+        RoleHierarchy roleHierarchy = roleHierarchyRepository.findByChildName(parentRole.getRoleName());
+        if (roleHierarchy == null) {
+            roleHierarchy = RoleHierarchy.builder()
+                    .childName(parentRole.getRoleName())
+                    .build();
+        }
+        RoleHierarchy parentRoleHierarchy = roleHierarchyRepository.save(roleHierarchy);
+
+        roleHierarchy = roleHierarchyRepository.findByChildName(childRole.getRoleName());
+        if (roleHierarchy == null) {
+            roleHierarchy = RoleHierarchy.builder()
+                    .childName(childRole.getRoleName())
+                    .build();
+        }
+
+        RoleHierarchy childRoleHierarchy = roleHierarchyRepository.save(roleHierarchy);
+        childRoleHierarchy.setParentName(parentRoleHierarchy);
     }
 }
