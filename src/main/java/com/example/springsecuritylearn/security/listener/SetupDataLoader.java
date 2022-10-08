@@ -1,9 +1,6 @@
 package com.example.springsecuritylearn.security.listener;
 
-import com.example.springsecuritylearn.domain.entity.Account;
-import com.example.springsecuritylearn.domain.entity.Resources;
-import com.example.springsecuritylearn.domain.entity.Role;
-import com.example.springsecuritylearn.domain.entity.RoleHierarchy;
+import com.example.springsecuritylearn.domain.entity.*;
 import com.example.springsecuritylearn.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -24,15 +21,17 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private ResourcesRepository resourcesRepository;
     private PasswordEncoder passwordEncoder;
     private RoleHierarchyRepository roleHierarchyRepository;
+    private AccessIpRepository accessIpRepository;
 
     @Autowired
     private void setSetupDataLoader(UserRepository userRepository, RoleRepository roleRepository, ResourcesRepository resourcesRepository, PasswordEncoder passwordEncoder,
-                                    RoleHierarchyRepository roleHierarchyRepository) {
+                                    RoleHierarchyRepository roleHierarchyRepository, AccessIpRepository accessIpRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.resourcesRepository = resourcesRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleHierarchyRepository = roleHierarchyRepository;
+        this.accessIpRepository = accessIpRepository;
     }
 
     private static final AtomicInteger count = new AtomicInteger(0);
@@ -45,6 +44,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         }
 
         setupSecurityResources();
+        setupAccessIpData();
         alreadySetup = true;
     }
 
@@ -111,6 +111,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Transactional
     public void createRoleHierarchyIfNotFound(Role childRole, Role parentRole) {
         RoleHierarchy roleHierarchy = roleHierarchyRepository.findByChildName(parentRole.getRoleName());
+
         if (roleHierarchy == null) {
             roleHierarchy = RoleHierarchy.builder()
                     .childName(parentRole.getRoleName())
@@ -119,6 +120,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         RoleHierarchy parentRoleHierarchy = roleHierarchyRepository.save(roleHierarchy);
 
         roleHierarchy = roleHierarchyRepository.findByChildName(childRole.getRoleName());
+
         if (roleHierarchy == null) {
             roleHierarchy = RoleHierarchy.builder()
                     .childName(childRole.getRoleName())
@@ -127,5 +129,16 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
         RoleHierarchy childRoleHierarchy = roleHierarchyRepository.save(roleHierarchy);
         childRoleHierarchy.setParentName(parentRoleHierarchy);
+    }
+
+    private void setupAccessIpData() {
+        AccessIp byIpAddress = accessIpRepository.findByIpAddress("0:0:0:0:0:0:0:1");
+
+        if (byIpAddress == null) {
+            AccessIp accessIp = AccessIp.builder()
+                    .ipAddress("0:0:0:0:0:0:0:1")
+                    .build();
+            accessIpRepository.save(accessIp);
+        }
     }
 }

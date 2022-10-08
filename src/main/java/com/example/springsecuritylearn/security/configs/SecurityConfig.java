@@ -6,6 +6,7 @@ import com.example.springsecuritylearn.security.filter.PermitAllFilter;
 import com.example.springsecuritylearn.security.handler.FormAccessDeniedHandler;
 import com.example.springsecuritylearn.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
 import com.example.springsecuritylearn.security.provider.FormAuthenticationProvider;
+import com.example.springsecuritylearn.security.voter.IpAddressVoter;
 import com.example.springsecuritylearn.service.SecurityResourceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,6 +131,7 @@ public class SecurityConfig {
 
     private List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
         List<AccessDecisionVoter<? extends Object>> accessDecisionVoters = new ArrayList<>();
+        accessDecisionVoters.add(new IpAddressVoter(securityResourceService));
         accessDecisionVoters.add(roleVoter());
 
         return accessDecisionVoters;

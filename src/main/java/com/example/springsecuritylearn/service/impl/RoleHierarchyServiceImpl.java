@@ -22,7 +22,6 @@ public class RoleHierarchyServiceImpl implements RoleHierarchyService {
     @Transactional
     @Override
     public String findAllHierarchy() {
-
         List<RoleHierarchy> rolesHierarchy = roleHierarchyRepository.findAll();
 
         Iterator<RoleHierarchy> itr = rolesHierarchy.iterator();

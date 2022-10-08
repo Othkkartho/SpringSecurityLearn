@@ -1,21 +1,28 @@
 package com.example.springsecuritylearn.service;
 
+import com.example.springsecuritylearn.domain.entity.AccessIp;
 import com.example.springsecuritylearn.domain.entity.Resources;
+import com.example.springsecuritylearn.repository.AccessIpRepository;
 import com.example.springsecuritylearn.repository.ResourcesRepository;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.SecurityConfig;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Service
 public class SecurityResourceService {
     private final ResourcesRepository resourcesRepository;
+    private final AccessIpRepository accessIpRepository;
 
-    public SecurityResourceService(ResourcesRepository resourcesRepository) {
+    public SecurityResourceService(ResourcesRepository resourcesRepository, AccessIpRepository accessIpRepository) {
         this.resourcesRepository = resourcesRepository;
+        this.accessIpRepository = accessIpRepository;
     }
 
     public LinkedHashMap<RequestMatcher, List<ConfigAttribute>> getResourceList() {
@@ -31,5 +38,9 @@ public class SecurityResourceService {
         });
 
         return result;
+    }
+
+    public List<String> getAccessIpList() {
+        return accessIpRepository.findAll().stream().map(AccessIp::getIpAddress).collect(Collectors.toList());
     }
 }
