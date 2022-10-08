@@ -2,7 +2,6 @@ package com.example.springsecuritylearn.controller.user;
 
 import com.example.springsecuritylearn.domain.dto.AccountDto;
 import com.example.springsecuritylearn.domain.entity.Account;
-import com.example.springsecuritylearn.repository.RoleRepository;
 import com.example.springsecuritylearn.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +43,12 @@ public class UserController {
 
 	@GetMapping(value="/mypage")
 	public String myPage(@AuthenticationPrincipal Account account, Authentication authentication, Principal principal) {
+		return "user/mypage";
+	}
+
+	@GetMapping("/order")
+	public String order(){
+		userService.order();
 		return "user/mypage";
 	}
 }
