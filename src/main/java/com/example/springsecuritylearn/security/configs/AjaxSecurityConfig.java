@@ -64,7 +64,7 @@ public class AjaxSecurityConfig {
         http
                 .antMatcher("/api/**")
                 .authorizeRequests()
-                .antMatchers("/api/message").hasRole("MANAGER")
+                .antMatchers("/api/messages").hasRole("MANAGER")
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(ajaxLoginProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
