@@ -3,7 +3,7 @@ package com.example.springsecuritylearn.security.configs;
 import com.example.springsecuritylearn.security.common.FormWebAuthenticationDetailsSource;
 import com.example.springsecuritylearn.security.factory.UrlResourcesMapFactoryBean;
 import com.example.springsecuritylearn.security.handler.FormAccessDeniedHandler;
-import com.example.springsecuritylearn.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
+import com.example.springsecuritylearn.security.metadatasource.UrlFilterInvocationSecurityMetadataSource;
 import com.example.springsecuritylearn.security.provider.FormAuthenticationProvider;
 import com.example.springsecuritylearn.service.SecurityResourceService;
 import lombok.extern.slf4j.Slf4j;
@@ -131,7 +131,7 @@ public class SecurityConfig {
 
     @Bean
     public FilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() throws Exception {
-        return new UrlFilterInvocationSecurityMetadatsSource(urlResourcesMapFactoryBean().getObject(), securityResourceService);
+        return new UrlFilterInvocationSecurityMetadataSource(urlResourcesMapFactoryBean().getObject(), securityResourceService);
     }
 
     private UrlResourcesMapFactoryBean urlResourcesMapFactoryBean() {

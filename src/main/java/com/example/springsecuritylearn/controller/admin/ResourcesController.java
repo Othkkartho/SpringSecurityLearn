@@ -4,7 +4,7 @@ import com.example.springsecuritylearn.domain.dto.ResourcesDto;
 import com.example.springsecuritylearn.domain.entity.Resources;
 import com.example.springsecuritylearn.domain.entity.Role;
 import com.example.springsecuritylearn.repository.RoleRepository;
-import com.example.springsecuritylearn.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
+import com.example.springsecuritylearn.security.metadatasource.UrlFilterInvocationSecurityMetadataSource;
 import com.example.springsecuritylearn.service.ResourcesService;
 import com.example.springsecuritylearn.service.RoleService;
 import org.modelmapper.ModelMapper;
@@ -24,14 +24,14 @@ public class ResourcesController {
 	private ResourcesService resourcesService;
 	private RoleRepository roleRepository;
 	private RoleService roleService;
-	private UrlFilterInvocationSecurityMetadatsSource urlFilterInvocationSecurityMetadatsSource;
+	private UrlFilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource;
 
 	@Autowired
-	private void setResourceController(ResourcesService resourcesService, RoleRepository roleRepository, RoleService roleService, UrlFilterInvocationSecurityMetadatsSource urlFilterInvocationSecurityMetadatsSource) {
+	private void setResourceController(ResourcesService resourcesService, RoleRepository roleRepository, RoleService roleService, UrlFilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource) {
 		this.resourcesService = resourcesService;
 		this.roleRepository = roleRepository;
 		this.roleService = roleService;
-		this.urlFilterInvocationSecurityMetadatsSource = urlFilterInvocationSecurityMetadatsSource;
+		this.urlFilterInvocationSecurityMetadataSource = urlFilterInvocationSecurityMetadataSource;
 	}
 
 	@GetMapping(value="/admin/resources")
@@ -52,7 +52,7 @@ public class ResourcesController {
 		resources.setRoleSet(roles);
 
 		resourcesService.createResources(resources);
-		urlFilterInvocationSecurityMetadatsSource.reload();
+		urlFilterInvocationSecurityMetadataSource.reload();
 
 		return "redirect:/admin/resources";
 	}
@@ -89,7 +89,7 @@ public class ResourcesController {
 	public String removeResources(@PathVariable String id, Model model) {
 		Resources resources = resourcesService.getResources(Long.parseLong(id));
 		resourcesService.deleteResources(Long.parseLong(id));
-		urlFilterInvocationSecurityMetadatsSource.reload();
+		urlFilterInvocationSecurityMetadataSource.reload();
 
 		return "redirect:/admin/resources";
 	}

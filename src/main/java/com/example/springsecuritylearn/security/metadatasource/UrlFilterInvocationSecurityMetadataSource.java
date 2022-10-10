@@ -5,16 +5,15 @@ import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
-public class UrlFilterInvocationSecurityMetadatsSource implements FilterInvocationSecurityMetadataSource {
+public class UrlFilterInvocationSecurityMetadataSource implements FilterInvocationSecurityMetadataSource {
     private final LinkedHashMap<RequestMatcher, List<ConfigAttribute>> requestMap;
     private SecurityResourceService securityResourceService;
 
-    public UrlFilterInvocationSecurityMetadatsSource(LinkedHashMap<RequestMatcher, List<ConfigAttribute>> resourcesMap, SecurityResourceService securityResourceService) {
+    public UrlFilterInvocationSecurityMetadataSource(LinkedHashMap<RequestMatcher, List<ConfigAttribute>> resourcesMap, SecurityResourceService securityResourceService) {
         this.requestMap = resourcesMap;
         this.securityResourceService = securityResourceService;
     }
