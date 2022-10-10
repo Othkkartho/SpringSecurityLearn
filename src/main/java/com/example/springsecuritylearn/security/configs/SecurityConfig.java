@@ -2,7 +2,7 @@ package com.example.springsecuritylearn.security.configs;
 
 import com.example.springsecuritylearn.security.common.FormWebAuthenticationDetailsSource;
 import com.example.springsecuritylearn.security.handler.FormAccessDeniedHandler;
-import com.example.springsecuritylearn.security.metadatasource.UrlFilterInvocationSecurityMetadatsSource;
+import com.example.springsecuritylearn.security.metadatasource.UrlFilterInvocationSecurityMetadataSource;
 import com.example.springsecuritylearn.security.provider.FormAuthenticationProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,6 +131,6 @@ public class SecurityConfig {
 
     @Bean
     public FilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() {
-        return new UrlFilterInvocationSecurityMetadatsSource();
+        return new UrlFilterInvocationSecurityMetadataSource();
     }
 }
