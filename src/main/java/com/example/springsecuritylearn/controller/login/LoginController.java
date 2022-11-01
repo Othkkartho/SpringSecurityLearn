@@ -40,7 +40,6 @@ public class LoginController {
 
     @GetMapping(value={"/denied","/api/denied"})
     public String accessDenied(@RequestParam(value = "exception", required = false) String exception, Principal principal, Model model) throws Exception {
-
         Account account = null;
 
         if (principal instanceof UsernamePasswordAuthenticationToken) {
